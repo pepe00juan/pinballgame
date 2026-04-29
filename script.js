@@ -1,3 +1,4 @@
+const esMovil = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 // ----- OBTENER ELEMENTOS DEL HTML -----
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -289,6 +290,21 @@ window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 resetBtn.addEventListener("click", reiniciarJuego);
 pausePlayBtn.addEventListener("click", togglePause);
+// Mover paleta con el dedo (móvil)
+canvas.addEventListener("touchmove", function(e) {
+  e.preventDefault();  // evitar que la pantalla se desplace
+  const rect = canvas.getBoundingClientRect();
+  let touchX = e.touches[0].clientX - rect.left;
+  touchX = Math.min(Math.max(touchX, 0), canvas.width - barra.width);
+  barra.x = touchX;
+});
+canvas.addEventListener("touchstart", function(e) {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  let touchX = e.touches[0].clientX - rect.left;
+  touchX = Math.min(Math.max(touchX, 0), canvas.width - barra.width);
+  barra.x = touchX;
+});
 
 crearBloques();
 reiniciarJuego();
