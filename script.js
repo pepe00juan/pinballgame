@@ -1,4 +1,3 @@
-const esMovil = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 // ----- OBTENER ELEMENTOS DEL HTML -----
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -9,15 +8,22 @@ const pausePlayBtn = document.getElementById("pausePlayButton");
 const radioMouse = document.querySelector('input[value="mouse"]');
 const radioKeyboard = document.querySelector('input[value="keyboard"]');
 
-// ----- IMAGEN DE FONDO (cámbiala si quieres) -----
+// ----- IMAGEN DE FONDO -----
 const fondoImagen = new Image();
-fondoImagen.src = "https://i.imgur.com/K7uFlBAl.jpg";
+fondoImagen.src = "https://i.imgur.com/9ZwMcDk.jpeg";
 
 // ----- VARIABLES DEL JUEGO -----
 let score = 0;
 let lives = 3;
-let gameRunning = true;   // false cuando game over o victoria
-let paused = false;       // pausa voluntaria
+let gameRunning = true;
+let paused = false;
+let yaPerdioVida = false;
+let tiempoUltimaPerdida = 0; // FIX: para evitar pérdidas rápidas
+
+// ----- NIVELES Y GUARDADO -----
+let nivelActual = 1;
+let puntuacionMaxima = 0;
+let totalNiveles = 10;
 
 // ----- PALETA -----
 const barra = {
@@ -38,17 +44,72 @@ let bola = {
 };
 
 // ----- BLOQUES -----
-const filas = 6;
+const filas = 8;
 const columnas = 10;
 const bloqueAncho = 65;
-const bloqueAlto = 25;
+const bloqueAlto = 22;
 const bloques = [];
 
+// ----- FUNCIÓN CREAR BLOQUES -----
 function crearBloques() {
+  let densidadObjetivo;
+  if (nivelActual <= 2) densidadObjetivo = 0.45;
+  else if (nivelActual <= 5) densidadObjetivo = 0.65;
+  else if (nivelActual <= 8) densidadObjetivo = 0.80;
+  else densidadObjetivo = 0.92;
+
+  const nuevaMatriz = Array(filas).fill().map(() => Array(columnas).fill(false));
+  let minPorFila = nivelActual <= 2 ? 3 : (nivelActual <= 5 ? 5 : 7);
+  
+  for (let i = 0; i < filas; i++) {
+    let indicesDisponibles = Array.from({length: columnas}, (_, idx) => idx);
+    for (let k = 0; k < minPorFila; k++) {
+      if (indicesDisponibles.length === 0) break;
+      let rand = Math.floor(Math.random() * indicesDisponibles.length);
+      let col = indicesDisponibles[rand];
+      nuevaMatriz[i][col] = true;
+      indicesDisponibles.splice(rand, 1);
+    }
+    for (let j = 0; j < columnas; j++) {
+      if (!nuevaMatriz[i][j] && Math.random() < densidadObjetivo) {
+        nuevaMatriz[i][j] = true;
+      }
+    }
+  }
+  
+  for (let j = 0; j < columnas; j++) {
+    let colVacia = true;
+    for (let i = 0; i < filas; i++) {
+      if (nuevaMatriz[i][j]) {
+        colVacia = false;
+        break;
+      }
+    }
+    if (colVacia) {
+      let filaAzar = Math.floor(Math.random() * filas);
+      nuevaMatriz[filaAzar][j] = true;
+    }
+  }
+  
+  for (let i = 0; i < filas; i++) {
+    let consecutivasVacias = 0;
+    for (let j = 0; j < columnas; j++) {
+      if (!nuevaMatriz[i][j]) {
+        consecutivasVacias++;
+        if (consecutivasVacias >= 4) {
+          nuevaMatriz[i][j] = true;
+          consecutivasVacias = 0;
+        }
+      } else {
+        consecutivasVacias = 0;
+      }
+    }
+  }
+  
   for (let i = 0; i < filas; i++) {
     bloques[i] = [];
     for (let j = 0; j < columnas; j++) {
-      bloques[i][j] = { activo: true, x: 0, y: 0 };
+      bloques[i][j] = { activo: nuevaMatriz[i][j], x: 0, y: 0 };
     }
   }
 }
@@ -87,29 +148,90 @@ function dibujarBola() {
 }
 
 function actualizarUI() {
+  // FIX: Garantizar que las vidas no se muestren negativas
+  if (lives < 0) lives = 0;
   scoreSpan.textContent = score;
   livesSpan.textContent = lives;
 }
 
-function reiniciarJuego() {
+// ----- GUARDADO -----
+function guardarProgreso() {
+  let recordActual = localStorage.getItem('puntuacionMaxima');
+  if (recordActual === null || score > parseInt(recordActual)) {
+    localStorage.setItem('puntuacionMaxima', score);
+  }
+  localStorage.setItem('nivelAlcanzado', nivelActual);
+  localStorage.setItem('vidasGuardadas', lives < 0 ? 0 : lives);
+  localStorage.setItem('puntuacionActual', score);
+}
+
+function cargarProgreso() {
+  let nivelGuardado = localStorage.getItem('nivelAlcanzado');
+  let recordGuardado = localStorage.getItem('puntuacionMaxima');
+  let vidasGuardadas = localStorage.getItem('vidasGuardadas');
+  let puntuacionGuardada = localStorage.getItem('puntuacionActual');
+  
+  if (nivelGuardado !== null) {
+    nivelActual = parseInt(nivelGuardado);
+    let vidasCargadas = vidasGuardadas !== null ? parseInt(vidasGuardadas) : 3;
+    // FIX: Asegurar vidas válidas (entre 1 y 5, o reiniciar a 3 si es 0 o negativo)
+    if (vidasCargadas <= 0) vidasCargadas = 3;
+    lives = vidasCargadas;
+    score = puntuacionGuardada !== null ? parseInt(puntuacionGuardada) : 0;
+    puntuacionMaxima = recordGuardado !== null ? parseInt(recordGuardado) : 0;
+    actualizarUI();
+    crearBloques();
+    bola.x = canvas.width / 2;
+    bola.y = canvas.height - 70;
+    bola.dx = 3.5 + (nivelActual * 0.15);
+    bola.dy = -3.5 - (nivelActual * 0.15);
+    barra.x = canvas.width / 2 - barra.width / 2;
+    yaPerdioVida = false;
+    alert(`Progreso cargado: Nivel ${nivelActual}, Puntos ${score}, Vidas ${lives}`);
+  } else {
+    // FIX: Valores por defecto seguros
+    nivelActual = 1;
+    lives = 3;
+    score = 0;
+    puntuacionMaxima = 0;
+    yaPerdioVida = false;
+    crearBloques();
+    actualizarUI();
+  }
+}
+
+function resetearProgreso() {
+  localStorage.clear();
+  nivelActual = 1;
+  lives = 3;
+  score = 0;
+  puntuacionMaxima = 0;
+  yaPerdioVida = false;
   gameRunning = true;
   paused = false;
-  pausePlayBtn.textContent = "⏸️ Pausar";
-  score = 0;
-  lives = 3;
+  crearBloques();
   bola.x = canvas.width / 2;
   bola.y = canvas.height - 70;
   bola.dx = 3.5;
   bola.dy = -3.5;
   barra.x = canvas.width / 2 - barra.width / 2;
-  for (let i = 0; i < filas; i++) {
-    for (let j = 0; j < columnas; j++) {
-      bloques[i][j].activo = true;
-    }
-  }
   actualizarUI();
+  alert("Progreso reiniciado. ¡Empiezas desde nivel 1!");
 }
 
+function reiniciarJuego() {
+  if (confirm("¿Quieres empezar desde el nivel 1? (Se perderá el progreso guardado)")) {
+    resetearProgreso();
+  } else {
+    cargarProgreso();
+  }
+  gameRunning = true;
+  paused = false;
+  yaPerdioVida = false;
+  pausePlayBtn.textContent = "⏸️ Pausar";
+}
+
+// ----- COLISIONES -----
 function colisionBloques() {
   let bloqueGolpeado = false;
   for (let i = 0; i < filas; i++) {
@@ -139,13 +261,14 @@ function colisionBloques() {
   }
 }
 
+// ----- MOVIMIENTO BOLA (CORREGIDO) -----
 function moverBola() {
-  if (!gameRunning || paused) return;  // no se mueve si pausado o game over
+  if (!gameRunning || paused) return;
   
   bola.x += bola.dx;
   bola.y += bola.dy;
   
-  // rebotes laterales y superior
+  // Rebotes laterales y superior
   if (bola.x + bola.radio > canvas.width || bola.x - bola.radio < 0) {
     bola.dx = -bola.dx;
   }
@@ -153,25 +276,38 @@ function moverBola() {
     bola.dy = -bola.dy;
   }
   
-  // perder vida
+  // Pérdida de vida con protección mejorada
   if (bola.y + bola.radio > canvas.height) {
-    lives--;
-    actualizarUI();
-    if (lives <= 0) {
-      gameRunning = false;
-      paused = false;
-      alert("💀 GAME OVER 💀\nPresiona 'NUEVA PARTIDA'");
-      return;
-    } else {
+    // Evitar pérdidas múltiples en el mismo frame o muy seguidas
+    const ahora = Date.now();
+    if (!yaPerdioVida && (ahora - tiempoUltimaPerdida > 500)) {
+      lives--;
+      actualizarUI();
+      
+      // FIX: Si después de restar lives es 0 o negativo, game over inmediato
+      if (lives <= 0) {
+        gameRunning = false;
+        paused = false;
+        alert("💀 GAME OVER 💀\nPresiona 'NUEVA PARTIDA'");
+        return;
+      }
+      
+      guardarProgreso();
+      yaPerdioVida = true;
+      tiempoUltimaPerdida = ahora;
+      
+      // Reposicionar bola y paleta
       bola.x = canvas.width / 2;
       bola.y = canvas.height - 70;
-      bola.dx = 3.5;
-      bola.dy = -3.5;
+      bola.dx = 3.5 + (nivelActual * 0.15);
+      bola.dy = -3.5 - (nivelActual * 0.15);
       barra.x = canvas.width / 2 - barra.width / 2;
     }
+  } else {
+    yaPerdioVida = false;
   }
   
-  // colisión con la paleta
+  // Colisión con paleta
   if (bola.y + bola.radio > barra.y &&
       bola.x > barra.x &&
       bola.x < barra.x + barra.width) {
@@ -184,7 +320,7 @@ function moverBola() {
   
   colisionBloques();
   
-  // comprobar victoria
+  // Victoria y subir de nivel
   let todosInactivos = true;
   for (let i = 0; i < filas; i++) {
     for (let j = 0; j < columnas; j++) {
@@ -195,25 +331,49 @@ function moverBola() {
     }
   }
   if (todosInactivos && gameRunning) {
-    gameRunning = false;
-    paused = false;
-    alert("🎉 ¡HAS GANADO! 🎉");
+    if (nivelActual < totalNiveles) {
+      nivelActual++;
+      guardarProgreso();
+      bola.x = canvas.width / 2;
+      bola.y = canvas.height - 70;
+      bola.dx = 3.5 + (nivelActual * 0.15);
+      bola.dy = -3.5 - (nivelActual * 0.15);
+      barra.x = canvas.width / 2 - barra.width / 2;
+      crearBloques();
+      alert(`🎉 ¡PASAS AL NIVEL ${nivelActual}! 🎉`);
+    } else {
+      gameRunning = false;
+      paused = false;
+      alert("🎉 ¡FELICIDADES, COMPLETASTE TODOS LOS NIVELES! 🎉");
+    }
   }
 }
 
-// ----- CONTROL POR RATÓN -----
+// ----- CONTROL RATÓN -----
 function moverPaletaMouse(e) {
   if (!gameRunning || paused) return;
   const controlModo = document.querySelector('input[name="control"]:checked').value;
   if (controlModo !== "mouse") return;
-  
   const rect = canvas.getBoundingClientRect();
   let mouseX = e.clientX - rect.left;
   mouseX = Math.min(Math.max(mouseX, 0), canvas.width - barra.width);
   barra.x = mouseX;
 }
 
-// ----- CONTROL POR TECLADO -----
+// ----- CONTROL TÁCTIL -----
+function moverPaletaTouch(e) {
+  e.preventDefault();
+  if (!gameRunning || paused) return;
+  const rect = canvas.getBoundingClientRect();
+  let touchX = e.touches[0].clientX - rect.left;
+  touchX = Math.min(Math.max(touchX, 0), canvas.width - barra.width);
+  barra.x = touchX;
+}
+
+canvas.addEventListener("touchstart", moverPaletaTouch);
+canvas.addEventListener("touchmove", moverPaletaTouch);
+
+// ----- CONTROL TECLADO -----
 let teclaIzquierda = false;
 let teclaDerecha = false;
 
@@ -221,20 +381,14 @@ function actualizarPaletaTeclado() {
   if (!gameRunning || paused) return;
   const controlModo = document.querySelector('input[name="control"]:checked').value;
   if (controlModo !== "keyboard") return;
-  
-  if (teclaIzquierda) {
-    barra.x -= barra.speed;
-  }
-  if (teclaDerecha) {
-    barra.x += barra.speed;
-  }
+  if (teclaIzquierda) barra.x -= barra.speed;
+  if (teclaDerecha) barra.x += barra.speed;
   barra.x = Math.min(Math.max(barra.x, 0), canvas.width - barra.width);
 }
 
 function handleKeyDown(e) {
   const controlModo = document.querySelector('input[name="control"]:checked').value;
   if (controlModo !== "keyboard") return;
-  
   if (e.key === "ArrowLeft") {
     teclaIzquierda = true;
     e.preventDefault();
@@ -245,23 +399,18 @@ function handleKeyDown(e) {
 }
 
 function handleKeyUp(e) {
-  if (e.key === "ArrowLeft") {
-    teclaIzquierda = false;
-    e.preventDefault();
-  } else if (e.key === "ArrowRight") {
-    teclaDerecha = false;
-    e.preventDefault();
-  }
+  if (e.key === "ArrowLeft") teclaIzquierda = false;
+  if (e.key === "ArrowRight") teclaDerecha = false;
 }
 
-// ----- PAUSA Y REANUDAR -----
+// ----- PAUSA -----
 function togglePause() {
   if (!gameRunning) return;
   paused = !paused;
   pausePlayBtn.textContent = paused ? "▶️ Reanudar" : "⏸️ Pausar";
 }
 
-// ----- DIBUJAR FONDO -----
+// ----- FONDO -----
 function dibujarFondo() {
   if (fondoImagen.complete && fondoImagen.naturalWidth > 0) {
     ctx.drawImage(fondoImagen, 0, 0, canvas.width, canvas.height);
@@ -271,16 +420,14 @@ function dibujarFondo() {
   }
 }
 
-// ----- ANIMACIÓN PRINCIPAL -----
+// ----- ANIMACIÓN -----
 function animar() {
   dibujarFondo();
   dibujarBloques();
   dibujarPaleta();
   dibujarBola();
-  
-  actualizarPaletaTeclado();  // movimiento por teclado (si procede)
-  moverBola();                // movimiento de la bola (respeta pausa)
-  
+  actualizarPaletaTeclado();
+  moverBola();
   requestAnimationFrame(animar);
 }
 
@@ -290,22 +437,8 @@ window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 resetBtn.addEventListener("click", reiniciarJuego);
 pausePlayBtn.addEventListener("click", togglePause);
-// Mover paleta con el dedo (móvil)
-canvas.addEventListener("touchmove", function(e) {
-  e.preventDefault();  // evitar que la pantalla se desplace
-  const rect = canvas.getBoundingClientRect();
-  let touchX = e.touches[0].clientX - rect.left;
-  touchX = Math.min(Math.max(touchX, 0), canvas.width - barra.width);
-  barra.x = touchX;
-});
-canvas.addEventListener("touchstart", function(e) {
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  let touchX = e.touches[0].clientX - rect.left;
-  touchX = Math.min(Math.max(touchX, 0), canvas.width - barra.width);
-  barra.x = touchX;
-});
 
+// FIX: Inicialización segura
 crearBloques();
-reiniciarJuego();
+cargarProgreso();  // Esto cargará valores válidos (si no hay guardado, pone lives=3)
 animar();
