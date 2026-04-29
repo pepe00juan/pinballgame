@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <div class="game-container">
+  <canvas id="gameCanvas" width="800" height="500"></canvas>
+  <div class="info">
+    <p>🎯 PUNTOS: <span id="score">0</span></p>
+    <p>❤️ VIDAS: <span id="lives">3</span></p>
+    <button id="resetButton">NUEVA PARTIDA</button>
+  </div>
+  <div class="controls">
+    <div class="control-mode">
+      <label><input type="radio" name="control" value="mouse" checked> 🖱️ Ratón</label>
+      <label><input type="radio" name="control" value="keyboard"> ⌨️ Teclado (← →)</label>
+    </div>
+    <div class="game-buttons">
+      <button id="pausePlayButton">⏸️ Pausar</button>
+    </div>
+  </div>
+</div>
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>

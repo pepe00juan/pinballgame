@@ -1,0 +1,30 @@
+.controls {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.control-mode {
+  display: flex;
+  gap: 15px;
+  background: #2a1a2a;
+  padding: 5px 12px;
+  border-radius: 30px;
+}
+
+.control-mode label {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.game-buttons button {
+  background: #44aaff;
+  padding: 5px 18px;
+}
+
+.game-buttons button:hover {
+  background: #66ccff;
+}
