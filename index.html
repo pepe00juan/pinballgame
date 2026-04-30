@@ -14,7 +14,6 @@
   <div class="info">
     <p>🎯 PUNTOS: <span id="score">0</span></p>
     <p>❤️ VIDAS: <span id="lives">3</span></p>
-    <p> Movil </p>
     <button id="resetButton">NUEVA PARTIDA</button>
   </div>
   <div class="controls">
@@ -24,8 +23,16 @@
     </div>
     <div class="game-buttons">
       <button id="pausePlayButton">⏸️ Pausar</button>
+      <button id="previewButton">👁️ Vista Previa</button>
     </div>
   </div>
+  <div class="image-controls">
+  <div class="mode-selector">
+    <span>🎨 Modo imagen: </span>
+    <label><input type="radio" name="imgMode" value="basic" id="modoBasico" checked> Básica (gratis)</label>
+    <label><input type="radio" name="imgMode" value="premium" id="modoPremium" disabled> Premium 🔒 (explícita)</label>
+  </div>
+  <button id="unlockPremiumBtn" class="unlock-btn">🔓 Desbloquear Premium ($1 USD)</button>
 </div>
     <script  src="./script.js"></script>
 

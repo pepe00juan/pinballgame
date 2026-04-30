@@ -8,9 +8,58 @@ const pausePlayBtn = document.getElementById("pausePlayButton");
 const radioMouse = document.querySelector('input[value="mouse"]');
 const radioKeyboard = document.querySelector('input[value="keyboard"]');
 
-// ----- IMAGEN DE FONDO -----
-const fondoImagen = new Image();
-fondoImagen.src = "https://i.imgur.com/9ZwMcDk.jpeg";
+// ----- IMÁGENES LOCALES (RUTAS RELATIVAS A LA CARPETA DEL PROYECTO) -----
+// CAMBIA AQUÍ: Coloca las rutas correctas de tus imágenes.
+// Debes tener tantas imágenes como niveles (totalNiveles = 10)
+// Las imágenes pueden ser JPG, PNG, GIF, etc.
+const totalNiveles = 10;
+
+const rutasBasicas = [
+  "imagenes/basica/nivel1.jpg",   // nivel 1 básico
+  "imagenes/basica/nivel2.jpg",   // nivel 2 básico
+  "imagenes/basica/nivel3.jpg",   // nivel 3 básico
+  "imagenes/basica/nivel4.jpg",   // nivel 4 básico
+  "imagenes/basica/nivel5.jpg",   // nivel 5 básico
+  "imagenes/basica/nivel6.jpg",   // nivel 6 básico
+  "imagenes/basica/nivel7.jpg",   // nivel 7 básico
+  "imagenes/basica/nivel8.jpg",   // nivel 8 básico
+  "imagenes/basica/nivel9.jpg",   // nivel 9 básico
+  "imagenes/basica/nivel10.jpg"   // nivel 10 básico
+];
+
+const rutasPremium = [
+  "imagenes/premium/nivel1.jpg",  // nivel 1 premium (explícita)
+  "imagenes/premium/nivel2.jpg",  // nivel 2 premium
+  "imagenes/premium/nivel3.jpg",
+  "imagenes/premium/nivel4.jpg",
+  "imagenes/premium/nivel5.jpg",
+  "imagenes/premium/nivel6.jpg",
+  "imagenes/premium/nivel7.jpg",
+  "imagenes/premium/nivel8.jpg",
+  "imagenes/premium/nivel9.jpg",
+  "imagenes/premium/nivel10.jpg"
+];
+
+// ----- VARIABLES DE MODO PREMIUM -----
+let modoPremiumDesbloqueado = false;
+let modoActual = "basic"; // "basic" o "premium"
+
+// Precarga de imágenes para que no se vean cortes al cambiar de nivel
+let imagenesBasicasCargadas = [];
+let imagenesPremiumCargadas = [];
+
+function precargarImagenes() {
+  for (let i = 0; i < totalNiveles; i++) {
+    const imgBasic = new Image();
+    imgBasic.src = rutasBasicas[i];
+    imagenesBasicasCargadas.push(imgBasic);
+    
+    const imgPremium = new Image();
+    imgPremium.src = rutasPremium[i];
+    imagenesPremiumCargadas.push(imgPremium);
+  }
+}
+precargarImagenes();
 
 // ----- VARIABLES DEL JUEGO -----
 let score = 0;
@@ -18,12 +67,11 @@ let lives = 3;
 let gameRunning = true;
 let paused = false;
 let yaPerdioVida = false;
-let tiempoUltimaPerdida = 0; // FIX: para evitar pérdidas rápidas
+let tiempoUltimaPerdida = 0;
 
 // ----- NIVELES Y GUARDADO -----
 let nivelActual = 1;
 let puntuacionMaxima = 0;
-let totalNiveles = 10;
 
 // ----- PALETA -----
 const barra = {
@@ -50,7 +98,7 @@ const bloqueAncho = 65;
 const bloqueAlto = 22;
 const bloques = [];
 
-// ----- FUNCIÓN CREAR BLOQUES -----
+// ----- FUNCIÓN CREAR BLOQUES (aleatorios según nivel) -----
 function crearBloques() {
   let densidadObjetivo;
   if (nivelActual <= 2) densidadObjetivo = 0.45;
@@ -148,13 +196,12 @@ function dibujarBola() {
 }
 
 function actualizarUI() {
-  // FIX: Garantizar que las vidas no se muestren negativas
   if (lives < 0) lives = 0;
   scoreSpan.textContent = score;
   livesSpan.textContent = lives;
 }
 
-// ----- GUARDADO -----
+// ----- GUARDADO (incluye preferencias de modo premium) -----
 function guardarProgreso() {
   let recordActual = localStorage.getItem('puntuacionMaxima');
   if (recordActual === null || score > parseInt(recordActual)) {
@@ -163,6 +210,8 @@ function guardarProgreso() {
   localStorage.setItem('nivelAlcanzado', nivelActual);
   localStorage.setItem('vidasGuardadas', lives < 0 ? 0 : lives);
   localStorage.setItem('puntuacionActual', score);
+  localStorage.setItem('premiumDesbloqueado', modoPremiumDesbloqueado);
+  localStorage.setItem('modoImagen', modoActual);
 }
 
 function cargarProgreso() {
@@ -174,7 +223,6 @@ function cargarProgreso() {
   if (nivelGuardado !== null) {
     nivelActual = parseInt(nivelGuardado);
     let vidasCargadas = vidasGuardadas !== null ? parseInt(vidasGuardadas) : 3;
-    // FIX: Asegurar vidas válidas (entre 1 y 5, o reiniciar a 3 si es 0 o negativo)
     if (vidasCargadas <= 0) vidasCargadas = 3;
     lives = vidasCargadas;
     score = puntuacionGuardada !== null ? parseInt(puntuacionGuardada) : 0;
@@ -189,7 +237,6 @@ function cargarProgreso() {
     yaPerdioVida = false;
     alert(`Progreso cargado: Nivel ${nivelActual}, Puntos ${score}, Vidas ${lives}`);
   } else {
-    // FIX: Valores por defecto seguros
     nivelActual = 1;
     lives = 3;
     score = 0;
@@ -197,6 +244,27 @@ function cargarProgreso() {
     yaPerdioVida = false;
     crearBloques();
     actualizarUI();
+  }
+  
+  // Cargar preferencias de premium
+  const desbloqueado = localStorage.getItem('premiumDesbloqueado');
+  if (desbloqueado === 'true') {
+    modoPremiumDesbloqueado = true;
+    document.getElementById("modoPremium").disabled = false;
+  } else {
+    modoPremiumDesbloqueado = false;
+    document.getElementById("modoPremium").disabled = true;
+  }
+  
+  const modoGuardado = localStorage.getItem('modoImagen');
+  if (modoGuardado === 'premium' && modoPremiumDesbloqueado) {
+    modoActual = 'premium';
+    document.getElementById("modoPremium").checked = true;
+    document.getElementById("modoBasico").checked = false;
+  } else {
+    modoActual = 'basic';
+    document.getElementById("modoBasico").checked = true;
+    document.getElementById("modoPremium").checked = false;
   }
 }
 
@@ -216,6 +284,13 @@ function resetearProgreso() {
   bola.dy = -3.5;
   barra.x = canvas.width / 2 - barra.width / 2;
   actualizarUI();
+  // Resetear modo premium
+  modoPremiumDesbloqueado = false;
+  modoActual = "basic";
+  document.getElementById("modoPremium").disabled = true;
+  document.getElementById("modoPremium").checked = false;
+  document.getElementById("modoBasico").checked = true;
+  guardarProgreso();
   alert("Progreso reiniciado. ¡Empiezas desde nivel 1!");
 }
 
@@ -268,7 +343,6 @@ function moverBola() {
   bola.x += bola.dx;
   bola.y += bola.dy;
   
-  // Rebotes laterales y superior
   if (bola.x + bola.radio > canvas.width || bola.x - bola.radio < 0) {
     bola.dx = -bola.dx;
   }
@@ -276,27 +350,20 @@ function moverBola() {
     bola.dy = -bola.dy;
   }
   
-  // Pérdida de vida con protección mejorada
   if (bola.y + bola.radio > canvas.height) {
-    // Evitar pérdidas múltiples en el mismo frame o muy seguidas
     const ahora = Date.now();
     if (!yaPerdioVida && (ahora - tiempoUltimaPerdida > 500)) {
       lives--;
       actualizarUI();
-      
-      // FIX: Si después de restar lives es 0 o negativo, game over inmediato
       if (lives <= 0) {
         gameRunning = false;
         paused = false;
         alert("💀 GAME OVER 💀\nPresiona 'NUEVA PARTIDA'");
         return;
       }
-      
       guardarProgreso();
       yaPerdioVida = true;
       tiempoUltimaPerdida = ahora;
-      
-      // Reposicionar bola y paleta
       bola.x = canvas.width / 2;
       bola.y = canvas.height - 70;
       bola.dx = 3.5 + (nivelActual * 0.15);
@@ -307,7 +374,6 @@ function moverBola() {
     yaPerdioVida = false;
   }
   
-  // Colisión con paleta
   if (bola.y + bola.radio > barra.y &&
       bola.x > barra.x &&
       bola.x < barra.x + barra.width) {
@@ -320,7 +386,6 @@ function moverBola() {
   
   colisionBloques();
   
-  // Victoria y subir de nivel
   let todosInactivos = true;
   for (let i = 0; i < filas; i++) {
     for (let j = 0; j < columnas; j++) {
@@ -369,7 +434,6 @@ function moverPaletaTouch(e) {
   touchX = Math.min(Math.max(touchX, 0), canvas.width - barra.width);
   barra.x = touchX;
 }
-
 canvas.addEventListener("touchstart", moverPaletaTouch);
 canvas.addEventListener("touchmove", moverPaletaTouch);
 
@@ -410,15 +474,62 @@ function togglePause() {
   pausePlayBtn.textContent = paused ? "▶️ Reanudar" : "⏸️ Pausar";
 }
 
-// ----- FONDO -----
+// ----- DIBUJO DE FONDO (usa las imágenes precargadas según nivel y modo) -----
 function dibujarFondo() {
-  if (fondoImagen.complete && fondoImagen.naturalWidth > 0) {
-    ctx.drawImage(fondoImagen, 0, 0, canvas.width, canvas.height);
+  let imagen = null;
+  if (modoActual === "premium" && modoPremiumDesbloqueado) {
+    imagen = imagenesPremiumCargadas[nivelActual - 1];
   } else {
+    imagen = imagenesBasicasCargadas[nivelActual - 1];
+  }
+  if (imagen && imagen.complete && imagen.naturalWidth > 0) {
+    ctx.drawImage(imagen, 0, 0, canvas.width, canvas.height);
+  } else {
+    // Fallback mientras carga
     ctx.fillStyle = "#2a0f2a";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (imagen) {
+      imagen.onload = () => ctx.drawImage(imagen, 0, 0, canvas.width, canvas.height);
+    }
   }
 }
+
+// ----- FUNCIÓN DESBLOQUEAR PREMIUM (simula pago) -----
+function desbloquearPremium() {
+  if (confirm("💰 Desbloquear contenido premium por $1 USD. ¿Deseas continuar?")) {
+    // Aquí integrarías un sistema de pago real (Stripe, PayPal, etc.)
+    // Simulamos éxito:
+    modoPremiumDesbloqueado = true;
+    localStorage.setItem('premiumDesbloqueado', 'true');
+    document.getElementById("modoPremium").disabled = false;
+    alert("¡Premium desbloqueado! Ahora puedes seleccionar el modo explícito.");
+    // Opcional: cambiar automáticamente a premium
+    document.getElementById("modoPremium").checked = true;
+    document.getElementById("modoBasico").checked = false;
+    modoActual = "premium";
+    guardarProgreso();
+  }
+}
+
+// ----- EVENTOS DE MODO Y DESBLOQUEO -----
+// Asegurarse de que los elementos existen (los creamos en HTML)
+document.getElementById("modoBasico").addEventListener("change", function() {
+  if (this.checked) {
+    modoActual = "basic";
+    guardarProgreso();
+  }
+});
+document.getElementById("modoPremium").addEventListener("change", function() {
+  if (this.checked && modoPremiumDesbloqueado) {
+    modoActual = "premium";
+    guardarProgreso();
+  } else if (this.checked && !modoPremiumDesbloqueado) {
+    alert("Debes desbloquear Premium primero.");
+    document.getElementById("modoBasico").checked = true;
+    this.checked = false;
+  }
+});
+document.getElementById("unlockPremiumBtn").addEventListener("click", desbloquearPremium);
 
 // ----- ANIMACIÓN -----
 function animar() {
@@ -431,14 +542,13 @@ function animar() {
   requestAnimationFrame(animar);
 }
 
-// ----- EVENTOS E INICIALIZACIÓN -----
+// ----- INICIALIZACIÓN -----
 canvas.addEventListener("mousemove", moverPaletaMouse);
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 resetBtn.addEventListener("click", reiniciarJuego);
 pausePlayBtn.addEventListener("click", togglePause);
 
-// FIX: Inicialización segura
 crearBloques();
-cargarProgreso();  // Esto cargará valores válidos (si no hay guardado, pone lives=3)
+cargarProgreso();   // Carga partida y preferencias de premium
 animar();
