@@ -15,29 +15,29 @@ const radioKeyboard = document.querySelector('input[value="keyboard"]');
 const totalNiveles = 10;
 
 const rutasBasicas = [
-  "imagenes/basica/basica1.jpg",   // nivel 1 básico
-  "imagenes/basica/basica2.jpg",   // nivel 2 básico
-  "imagenes/basica/basica3.jpg",   // nivel 3 básico
-  "imagenes/basica/basica4.jpg",   // nivel 4 básico
-  "imagenes/basica/basica5.jpg",   // nivel 5 básico
-  "imagenes/basica/basica6.jpg",   // nivel 6 básico
-  "imagenes/basica/basica7.jpg",   // nivel 7 básico
-  "imagenes/basica/basica8.jpg",   // nivel 8 básico
-  "imagenes/basica/basica9.jpg",   // nivel 9 básico
-  "imagenes/basica/basica10.jpg"   // nivel 10 básico
+  "imagenes/basica/basica1.png",   // nivel 1 básico
+  "imagenes/basica/basica2.png",   // nivel 2 básico
+  "imagenes/basica/basica3.png",   // nivel 3 básico
+  "imagenes/basica/basica4.png",   // nivel 4 básico
+  "imagenes/basica/basica5.png",   // nivel 5 básico
+  "imagenes/basica/basica6.png",   // nivel 6 básico
+  "imagenes/basica/basica7.png",   // nivel 7 básico
+  "imagenes/basica/basica8.png",   // nivel 8 básico
+  "imagenes/basica/basica9.png",   // nivel 9 básico
+  "imagenes/basica/basica10.png"   // nivel 10 básico
 ];
 
 const rutasPremium = [
-  "imagenes/premium/premmium1.jpg",  // nivel 1 premium (explícita)
-  "imagenes/premium/premmium2.jpg",  // nivel 2 premium
-  "imagenes/premium/premmium3.jpg",
-  "imagenes/premium/premmium4.jpg",
-  "imagenes/premium/premmium5.jpg",
-  "imagenes/premium/premmium6.jpg",
-  "imagenes/premium/premmium7.jpg",
-  "imagenes/premium/premmium8.jpg",
-  "imagenes/premium/premmium9.jpg",
-  "imagenes/premium/premmium10.jpg"
+  "imagenes/premium/premmium1.png",  // nivel 1 premium (explícita)
+  "imagenes/premium/premmium2.png",  // nivel 2 premium
+  "imagenes/premium/premmium3.png",
+  "imagenes/premium/premmium4.png",
+  "imagenes/premium/premmium5.png",
+  "imagenes/premium/premmium6.png",
+  "imagenes/premium/premmium7.png",
+  "imagenes/premium/premmium8.png",
+  "imagenes/premium/premmium9.png",
+  "imagenes/premium/premmium10.png"
 ];
 
 // ----- VARIABLES DE MODO PREMIUM -----
