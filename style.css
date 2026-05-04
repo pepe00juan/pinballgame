@@ -74,3 +74,25 @@
   background: #ffcc66;
   transform: scale(1.02);
 }
+/* Mejoras para móvil */
+canvas {
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+@media (max-width: 768px) {
+  button, .unlock-btn, #applyImageBtn {
+    padding: 10px 16px;
+    font-size: 14px;
+    min-height: 44px; /* Tamaño mínimo recomendado para dedos */
+  }
+  .control-mode label, .mode-selector label {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+  .info {
+    gap: 15px;
+    font-size: 14px;
+  }
+}
