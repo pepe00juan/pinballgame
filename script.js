@@ -1,3 +1,14 @@
+// NUEVA LINEA: Detectar móvil y ajustar interfaz
+const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+if (esMovil) {
+  // Ocultar el selector de control (Ratón/Teclado) porque en móvil solo usamos táctil
+    setTimeout(() => {
+    alert("💡 Tip: Arrastra tu dedo sobre el área del juego para mover la paleta");
+  }, 1000);
+  const controlDiv = document.querySelector('.control-mode');
+  if (controlDiv) controlDiv.style.display = 'none';
+  }
 // ----- OBTENER ELEMENTOS DEL HTML -----
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
