@@ -15,29 +15,29 @@ const radioKeyboard = document.querySelector('input[value="keyboard"]');
 const totalNiveles = 10;
 
 const rutasBasicas = [
-  "imagenes/basica/nivel1.jpg",   // nivel 1 básico
-  "imagenes/basica/nivel2.jpg",   // nivel 2 básico
-  "imagenes/basica/nivel3.jpg",   // nivel 3 básico
-  "imagenes/basica/nivel4.jpg",   // nivel 4 básico
-  "imagenes/basica/nivel5.jpg",   // nivel 5 básico
-  "imagenes/basica/nivel6.jpg",   // nivel 6 básico
-  "imagenes/basica/nivel7.jpg",   // nivel 7 básico
-  "imagenes/basica/nivel8.jpg",   // nivel 8 básico
-  "imagenes/basica/nivel9.jpg",   // nivel 9 básico
-  "imagenes/basica/nivel10.jpg"   // nivel 10 básico
+  "imagenes/basica/basica1.jpg",   // nivel 1 básico
+  "imagenes/basica/basica2.jpg",   // nivel 2 básico
+  "imagenes/basica/basica3.jpg",   // nivel 3 básico
+  "imagenes/basica/basica4.jpg",   // nivel 4 básico
+  "imagenes/basica/basica5.jpg",   // nivel 5 básico
+  "imagenes/basica/basica6.jpg",   // nivel 6 básico
+  "imagenes/basica/basica7.jpg",   // nivel 7 básico
+  "imagenes/basica/basica8.jpg",   // nivel 8 básico
+  "imagenes/basica/basica9.jpg",   // nivel 9 básico
+  "imagenes/basica/basica10.jpg"   // nivel 10 básico
 ];
 
 const rutasPremium = [
-  "imagenes/premium/nivel1.jpg",  // nivel 1 premium (explícita)
-  "imagenes/premium/nivel2.jpg",  // nivel 2 premium
-  "imagenes/premium/nivel3.jpg",
-  "imagenes/premium/nivel4.jpg",
-  "imagenes/premium/nivel5.jpg",
-  "imagenes/premium/nivel6.jpg",
-  "imagenes/premium/nivel7.jpg",
-  "imagenes/premium/nivel8.jpg",
-  "imagenes/premium/nivel9.jpg",
-  "imagenes/premium/nivel10.jpg"
+  "imagenes/premium/premmium1.jpg",  // nivel 1 premium (explícita)
+  "imagenes/premium/premmium2.jpg",  // nivel 2 premium
+  "imagenes/premium/premmium3.jpg",
+  "imagenes/premium/premmium4.jpg",
+  "imagenes/premium/premmium5.jpg",
+  "imagenes/premium/premmium6.jpg",
+  "imagenes/premium/premmium7.jpg",
+  "imagenes/premium/premmium8.jpg",
+  "imagenes/premium/premmium9.jpg",
+  "imagenes/premium/premmium10.jpg"
 ];
 
 // ----- VARIABLES DE MODO PREMIUM -----
