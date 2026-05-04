@@ -28,16 +28,16 @@ const rutasBasicas = [
 ];
 
 const rutasPremium = [
-  "imagenes/premium/premmium1.png",  // nivel 1 premium (explícita)
-  "imagenes/premium/premmium2.png",  // nivel 2 premium
-  "imagenes/premium/premmium3.png",
-  "imagenes/premium/premmium4.png",
-  "imagenes/premium/premmium5.png",
-  "imagenes/premium/premmium6.png",
-  "imagenes/premium/premmium7.png",
-  "imagenes/premium/premmium8.png",
-  "imagenes/premium/premmium9.png",
-  "imagenes/premium/premmium10.png"
+  "imagenes/premium/premium1.png",  // nivel 1 premium (explícita)
+  "imagenes/premium/premium2.png",  // nivel 2 premium
+  "imagenes/premium/premium3.png",
+  "imagenes/premium/premium4.png",
+  "imagenes/premium/premium5.png",
+  "imagenes/premium/premium6.png",
+  "imagenes/premium/premium7.png",
+  "imagenes/premium/premium8.png",
+  "imagenes/premium/premium9.png",
+  "imagenes/premium/premium10.png"
 ];
 
 // ----- VARIABLES DE MODO PREMIUM -----
